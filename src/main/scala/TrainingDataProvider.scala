@@ -1,5 +1,4 @@
-import data.Client
-import org.apache.spark.mllib.feature.{Normalizer, StandardScaler}
+import org.apache.spark.mllib.feature.Normalizer
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
@@ -9,7 +8,7 @@ object TrainingDataProvider {
     val clientsParams = prepareClientsParams(objects)
     val clientsIssues = prepareClientsIssues(target)
 
-    clientsParams
+    val trainingData = clientsParams
         .join(clientsIssues)
         .map{case (id, data) => data}
         .map{
@@ -21,8 +20,9 @@ object TrainingDataProvider {
               )
             )
         }
+    normalizeTrainingData(trainingData)
   }
-  def prepareClientsParams(objects: RDD[String]) = {
+  private def prepareClientsParams(objects: RDD[String]) = {
     objects
         .zipWithIndex()
         .map(_.swap)
@@ -33,18 +33,12 @@ object TrainingDataProvider {
         .mapValues(_.split(";").map(_.toDouble))
         //.mapValues(Client(_))
   }
-  def prepareClientsIssues(target: RDD[String]) = {
+  private def prepareClientsIssues(target: RDD[String]) = {
     target
         .zipWithIndex()
         .map(_.swap)
   }
-  def scaleTrainingData(trainingData: RDD[LabeledPoint]) = {
-    val scaler = new StandardScaler().fit(trainingData.map(_.features))
-    trainingData.map(
-      labeledPoint => LabeledPoint(labeledPoint.label, scaler.transform(labeledPoint.features))
-    )
-  }
-  def normalizeTrainingData(trainingData: RDD[LabeledPoint]) = {
+  private def normalizeTrainingData(trainingData: RDD[LabeledPoint]) = {
     trainingData.map(
       labeledPoint => LabeledPoint(labeledPoint.label, new Normalizer().transform(labeledPoint.features))
     )
