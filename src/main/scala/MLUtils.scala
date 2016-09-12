@@ -1,6 +1,6 @@
-import org.apache.spark.mllib.classification.{LogisticRegressionModel, LogisticRegressionWithLBFGS}
+import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.regression.{GeneralizedLinearModel, LabeledPoint}
 import org.apache.spark.rdd.RDD
 
 object MLUtils {
@@ -8,14 +8,18 @@ object MLUtils {
     new LogisticRegressionWithLBFGS().run(data).clearThreshold()
   }
 
-  def getMetrics(model: LogisticRegressionModel, data: RDD[LabeledPoint]) = {
+  def getMetrics(model: GeneralizedLinearModel, data: RDD[LabeledPoint]) = {
     val predictionAndLabels = data.map(
       lPoint => {
         val prediction = model.predict(lPoint.features)
-        //println(prediction + " - " + lPoint.label)
         (prediction, lPoint.label)
       }
     )
     new BinaryClassificationMetrics(predictionAndLabels)
+  }
+
+  def printMetrics(metrics: BinaryClassificationMetrics, sampleRate: Double) = {
+    metrics.roc().sample(withReplacement = true, fraction = sampleRate).saveAsTextFile("results/roc")
+    println("AUC ROC = " + metrics.areaUnderROC())
   }
 }

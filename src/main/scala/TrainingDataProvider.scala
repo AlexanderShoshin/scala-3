@@ -4,24 +4,15 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
 
 object TrainingDataProvider {
-  def prepareTrainingData(objects: RDD[String], target: RDD[String]) = {
-    val clientsParams = prepareClientsParams(objects)
-    val clientsIssues = prepareClientsIssues(target)
 
-    val trainingData = clientsParams
-        .join(clientsIssues)
-        .map{case (id, data) => data}
-        .map{
-          case (clientInfo, clientIssue) =>
-            LabeledPoint(
-              clientIssue.toDouble,
-              Vectors.dense(
-                clientInfo
-              )
-            )
-        }
-    normalizeTrainingData(trainingData)
+  def prepareInputData(params: RDD[String], decisions: RDD[String], trainingRate: Double) = {
+    val clientsParams = prepareClientsParams(params)
+    val clientsDecisions = prepareClientsDecisions(decisions)
+    val inputData = createLabelPoints(clientsParams, clientsDecisions)
+    val normalizedData = normalizeData(inputData)
+    normalizedData.randomSplit(Array(trainingRate, 1 - trainingRate))
   }
+
   private def prepareClientsParams(objects: RDD[String]) = {
     objects
         .zipWithIndex()
@@ -31,14 +22,30 @@ object TrainingDataProvider {
         .filter{case (id, data) => data.count(_ == ';') == 48}
         .filter{case (id, data) => !data.contains("NaN")}
         .mapValues(_.split(";").map(_.toDouble))
-        //.mapValues(Client(_))
   }
-  private def prepareClientsIssues(target: RDD[String]) = {
+
+  private def prepareClientsDecisions(target: RDD[String]) = {
     target
         .zipWithIndex()
         .map(_.swap)
   }
-  private def normalizeTrainingData(trainingData: RDD[LabeledPoint]) = {
+
+  private def createLabelPoints(points: RDD[(Long, Array[Double])], labels: RDD[(Long, String)]) = {
+    points
+        .join(labels)
+        .map{case (id, data) => data}
+        .map{
+          case (points, label) =>
+            LabeledPoint(
+              label.toDouble,
+              Vectors.dense(
+                points
+              )
+            )
+        }
+  }
+
+  private def normalizeData(trainingData: RDD[LabeledPoint]) = {
     trainingData.map(
       labeledPoint => LabeledPoint(labeledPoint.label, new Normalizer().transform(labeledPoint.features))
     )
