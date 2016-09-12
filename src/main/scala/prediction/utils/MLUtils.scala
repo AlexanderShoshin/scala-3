@@ -1,3 +1,5 @@
+package prediction.utils
+
 import org.apache.spark.mllib.classification.LogisticRegressionWithLBFGS
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.regression.{GeneralizedLinearModel, LabeledPoint}

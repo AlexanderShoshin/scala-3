@@ -1,3 +1,7 @@
+package prediction.utils
+
+import prediction.data.DataLocation
+
 class CliParser extends scopt.OptionParser[DataLocation]("scala-1") {
   opt[String]('p', "params")
       .required()

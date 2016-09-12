@@ -1,3 +1,5 @@
+package prediction
+
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Config {

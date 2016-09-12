@@ -1,4 +1,9 @@
-object DecisionPredictionJob {
+package prediction
+
+import prediction.data.DataLocation
+import prediction.utils.{MLUtils, TrainingDataProvider}
+
+object ClientsDecisionJob {
   def execute(dataLocation: DataLocation) = {
     val context = Config.getContext()
 

@@ -1,3 +1,5 @@
+package prediction.utils
+
 import org.apache.spark.mllib.feature.Normalizer
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
