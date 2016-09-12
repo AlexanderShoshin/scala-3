@@ -18,8 +18,8 @@ object MLUtils {
     new BinaryClassificationMetrics(predictionAndLabels)
   }
 
-  def printMetrics(metrics: BinaryClassificationMetrics, sampleRate: Double) = {
-    metrics.roc().sample(withReplacement = true, fraction = sampleRate).saveAsTextFile("results/roc")
+  def printMetrics(metrics: BinaryClassificationMetrics, outputPath: String, sampleRate: Double) = {
+    metrics.roc().sample(withReplacement = true, fraction = sampleRate).saveAsTextFile(outputPath)
     println("AUC ROC = " + metrics.areaUnderROC())
   }
 }
